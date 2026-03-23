@@ -1,0 +1,1590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AutomotiveRAGFlow Premium Explorer</title>
+  <style>
+    :root{
+      --bg:#07111f;
+      --bg2:#0b1728;
+      --panel:#0f1c30;
+      --panel2:#13243d;
+      --panel3:#182b49;
+      --soft:#1d3557;
+      --line:#27456e;
+      --line2:#355783;
+      --text:#ecf4ff;
+      --muted:#9db4d4;
+      --blue:#63b3ff;
+      --cyan:#57d6ff;
+      --green:#57e389;
+      --gold:#ffc857;
+      --orange:#ff9f5a;
+      --purple:#a78bfa;
+      --red:#ff6b6b;
+      --shadow:0 20px 60px rgba(0,0,0,.35);
+      --radius:18px;
+      --radius-sm:12px;
+    }
+
+    * { box-sizing:border-box; }
+    html,body { margin:0; padding:0; }
+    body{
+      font-family: Inter, Segoe UI, Arial, sans-serif;
+      color:var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(99,179,255,.10), transparent 24%),
+        radial-gradient(circle at top right, rgba(87,227,137,.08), transparent 22%),
+        linear-gradient(180deg, #040b16 0%, #07111f 100%);
+      min-height:100vh;
+    }
+
+    .app{
+      max-width:1600px;
+      margin:0 auto;
+      padding:24px;
+    }
+
+    .topbar{
+      display:flex;
+      justify-content:space-between;
+      gap:20px;
+      align-items:flex-start;
+      margin-bottom:18px;
+      flex-wrap:wrap;
+    }
+
+    .title h1{
+      margin:0 0 8px 0;
+      font-size:28px;
+      letter-spacing:.2px;
+    }
+
+    .title p{
+      margin:0;
+      color:var(--muted);
+      max-width:980px;
+      line-height:1.55;
+      font-size:15px;
+    }
+
+    .toolbar{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+
+    .btn{
+      background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+      color:var(--text);
+      border:1px solid var(--line);
+      border-radius:12px;
+      padding:10px 14px;
+      cursor:pointer;
+      font-weight:600;
+      transition:.18s ease;
+      box-shadow:0 8px 20px rgba(0,0,0,.18);
+    }
+
+    .btn:hover{
+      border-color:var(--blue);
+      transform:translateY(-1px);
+    }
+
+    .search-row{
+      margin:14px 0 18px 0;
+      display:flex;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+
+    .search{
+      flex:1;
+      min-width:280px;
+      background:rgba(8,18,32,.92);
+      border:1px solid var(--line);
+      color:var(--text);
+      padding:14px 16px;
+      border-radius:14px;
+      outline:none;
+      font-size:14px;
+    }
+
+    .search:focus{
+      border-color:var(--blue);
+      box-shadow:0 0 0 3px rgba(99,179,255,.10);
+    }
+
+    .layout{
+      display:grid;
+      grid-template-columns: 340px 360px 1fr;
+      gap:18px;
+      align-items:start;
+    }
+
+    .panel{
+      background:linear-gradient(180deg, rgba(16,29,49,.92), rgba(11,23,40,.96));
+      border:1px solid rgba(62,95,138,.55);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      overflow:hidden;
+    }
+
+    .panel-header{
+      padding:16px 18px;
+      border-bottom:1px solid rgba(62,95,138,.45);
+      background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.01));
+    }
+
+    .panel-header h2{
+      margin:0 0 6px 0;
+      font-size:18px;
+    }
+
+    .panel-header p{
+      margin:0;
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.5;
+    }
+
+    .panel-body{
+      padding:16px;
+    }
+
+    .flow-list,
+    .stage-list{
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+    }
+
+    .flow-card{
+      border:1px solid var(--line);
+      background:linear-gradient(180deg, rgba(255,255,255,.035), rgba(255,255,255,.015));
+      border-radius:16px;
+      padding:14px 14px;
+      cursor:pointer;
+      transition:.18s ease;
+      position:relative;
+    }
+
+    .flow-card:hover{
+      border-color:var(--blue);
+      transform:translateY(-1px);
+    }
+
+    .flow-card.active{
+      border-color:var(--cyan);
+      box-shadow:0 0 0 2px rgba(87,214,255,.16) inset, 0 8px 25px rgba(0,0,0,.22);
+      background:linear-gradient(180deg, rgba(87,214,255,.10), rgba(255,255,255,.02));
+    }
+
+    .flow-card .kicker{
+      display:inline-block;
+      font-size:11px;
+      color:var(--blue);
+      background:rgba(99,179,255,.10);
+      border:1px solid rgba(99,179,255,.25);
+      padding:4px 8px;
+      border-radius:999px;
+      margin-bottom:8px;
+      font-weight:700;
+      letter-spacing:.25px;
+    }
+
+    .flow-card h3{
+      margin:0 0 6px 0;
+      font-size:17px;
+      line-height:1.25;
+    }
+
+    .flow-card p{
+      margin:0;
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.45;
+    }
+
+    .flow-card.hidden,
+    .stage-item.hidden{
+      display:none;
+    }
+
+    .stage-item{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      padding:14px;
+      border:1px solid var(--line);
+      border-radius:15px;
+      background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.015));
+      cursor:pointer;
+      transition:.18s ease;
+      position:relative;
+    }
+
+    .stage-item:hover{
+      border-color:var(--blue);
+    }
+
+    .stage-item.active{
+      border-color:var(--cyan);
+      background:linear-gradient(180deg, rgba(87,214,255,.09), rgba(255,255,255,.02));
+      box-shadow:0 0 0 2px rgba(87,214,255,.14) inset;
+    }
+
+    .stage-num{
+      width:42px;
+      height:42px;
+      border-radius:50%;
+      display:grid;
+      place-items:center;
+      font-weight:800;
+      font-size:13px;
+      flex-shrink:0;
+      border:1px solid rgba(255,255,255,.10);
+      color:white;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.08);
+    }
+
+    .cat-ingestion{ background:linear-gradient(180deg, rgba(255,159,90,.95), rgba(232,119,32,.95)); }
+    .cat-processing{ background:linear-gradient(180deg, rgba(255,200,87,.95), rgba(222,156,18,.95)); }
+    .cat-query{ background:linear-gradient(180deg, rgba(99,179,255,.95), rgba(39,110,209,.95)); }
+    .cat-retrieval{ background:linear-gradient(180deg, rgba(167,139,250,.95), rgba(109,73,221,.95)); }
+    .cat-diagnosis{ background:linear-gradient(180deg, rgba(87,227,137,.95), rgba(34,156,84,.95)); }
+    .cat-loop{ background:linear-gradient(180deg, rgba(87,214,255,.95), rgba(0,150,199,.95)); }
+    .cat-response{ background:linear-gradient(180deg, rgba(255,107,107,.95), rgba(214,57,57,.95)); }
+
+    .stage-text{
+      flex:1;
+      min-width:0;
+    }
+
+    .stage-text h4{
+      margin:0 0 5px 0;
+      font-size:15px;
+      line-height:1.3;
+    }
+
+    .stage-text p{
+      margin:0;
+      color:var(--muted);
+      font-size:12.5px;
+      line-height:1.45;
+    }
+
+    .arrow{
+      text-align:center;
+      color:var(--muted);
+      font-size:22px;
+      margin:1px 0;
+      opacity:.7;
+    }
+
+    .detail-head{
+      display:flex;
+      justify-content:space-between;
+      gap:16px;
+      align-items:flex-start;
+      flex-wrap:wrap;
+      margin-bottom:16px;
+    }
+
+    .detail-title-wrap{
+      flex:1;
+      min-width:240px;
+    }
+
+    .detail-badges{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      margin-bottom:10px;
+    }
+
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding:6px 10px;
+      border-radius:999px;
+      font-size:12px;
+      font-weight:700;
+      border:1px solid var(--line2);
+      background:rgba(255,255,255,.04);
+      color:var(--muted);
+    }
+
+    .detail-title{
+      margin:0 0 8px 0;
+      font-size:30px;
+      line-height:1.15;
+    }
+
+    .detail-sub{
+      color:var(--muted);
+      line-height:1.6;
+      font-size:15px;
+      margin:0;
+    }
+
+    .nav-mini{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+    }
+
+    .tabs{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin:18px 0 16px 0;
+    }
+
+    .tab-btn{
+      padding:9px 13px;
+      border-radius:12px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.03);
+      color:var(--muted);
+      cursor:pointer;
+      font-weight:700;
+      transition:.15s ease;
+    }
+
+    .tab-btn:hover{
+      border-color:var(--blue);
+      color:var(--text);
+    }
+
+    .tab-btn.active{
+      background:linear-gradient(180deg, rgba(99,179,255,.18), rgba(87,214,255,.08));
+      color:white;
+      border-color:var(--blue);
+      box-shadow:0 0 0 1px rgba(99,179,255,.18) inset;
+    }
+
+    .tab-panel{
+      display:none;
+    }
+
+    .tab-panel.active{
+      display:block;
+    }
+
+    .summary-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:14px;
+    }
+
+    .box{
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:15px;
+      background:linear-gradient(180deg, rgba(255,255,255,.035), rgba(255,255,255,.02));
+    }
+
+    .box h3{
+      margin:0 0 10px 0;
+      font-size:15px;
+      color:#fff;
+    }
+
+    .box p, .box li{
+      color:var(--muted);
+      line-height:1.55;
+      font-size:14px;
+    }
+
+    .box ul, .box ol{
+      margin:0;
+      padding-left:18px;
+    }
+
+    .reveal-group{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+
+    .reveal-item{
+      border:1px solid var(--line);
+      border-radius:14px;
+      overflow:hidden;
+      background:rgba(255,255,255,.02);
+    }
+
+    .reveal-head{
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      align-items:center;
+      padding:12px 14px;
+      cursor:pointer;
+      background:rgba(255,255,255,.03);
+    }
+
+    .reveal-head strong{
+      font-size:14px;
+    }
+
+    .reveal-body{
+      display:none;
+      padding:0 14px 14px 14px;
+    }
+
+    .reveal-body.open{
+      display:block;
+    }
+
+    pre{
+      margin:0;
+      padding:14px;
+      border-radius:14px;
+      background:#06101d;
+      border:1px solid #183458;
+      color:#d8ebff;
+      overflow:auto;
+      font-size:12.5px;
+      line-height:1.55;
+      white-space:pre-wrap;
+      word-break:break-word;
+    }
+
+    .file-card{
+      border:1px solid var(--line);
+      border-radius:16px;
+      overflow:hidden;
+      background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.015));
+      margin-bottom:12px;
+    }
+
+    .file-head{
+      padding:14px;
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      align-items:flex-start;
+      cursor:pointer;
+    }
+
+    .file-head strong{
+      display:block;
+      font-size:15px;
+      margin-bottom:6px;
+    }
+
+    .file-meta{
+      color:var(--muted);
+      font-size:12.5px;
+      line-height:1.45;
+    }
+
+    .file-body{
+      display:none;
+      padding:0 14px 14px 14px;
+      border-top:1px solid rgba(62,95,138,.35);
+    }
+
+    .file-body.open{
+      display:block;
+    }
+
+    .mini-actions{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      margin:14px 0 10px 0;
+    }
+
+    .mini-btn{
+      padding:7px 10px;
+      border-radius:10px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.03);
+      color:var(--muted);
+      cursor:pointer;
+      font-size:12px;
+      font-weight:700;
+    }
+
+    .mini-btn:hover{
+      border-color:var(--blue);
+      color:var(--text);
+    }
+
+    .empty-state{
+      min-height:520px;
+      display:grid;
+      place-items:center;
+      text-align:center;
+      color:var(--muted);
+      padding:30px;
+    }
+
+    .empty-state-inner{
+      max-width:460px;
+    }
+
+    .empty-state h3{
+      color:white;
+      font-size:24px;
+      margin:0 0 10px 0;
+    }
+
+    .empty-state p{
+      margin:0;
+      line-height:1.6;
+    }
+
+    .footer-note{
+      margin-top:16px;
+      color:var(--muted);
+      font-size:12.5px;
+      line-height:1.55;
+    }
+
+    .chev{
+      color:var(--blue);
+      font-weight:800;
+      flex-shrink:0;
+    }
+
+    @media (max-width:1200px){
+      .layout{
+        grid-template-columns:1fr;
+      }
+      .empty-state{
+        min-height:260px;
+      }
+    }
+
+    @media (max-width:700px){
+      .app{ padding:14px; }
+      .detail-title{ font-size:24px; }
+      .summary-grid{ grid-template-columns:1fr; }
+      .panel-body, .panel-header{ padding:14px; }
+      .flow-card h3{ font-size:16px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="topbar">
+      <div class="title">
+        <h1>AutomotiveRAGFlow</h1>
+        <p>
+          Premium architecture explorer for a RAG-based automotive diagnosis system.
+          Click any flow block on the left or any stage in the middle to inspect purpose, pre/post data,
+          involved files, and code — all layered cleanly without overwhelming dumps.
+        </p>
+      </div>
+
+      <div class="toolbar">
+        <button class="btn" id="expandAllFiles">Expand All Files</button>
+        <button class="btn" id="collapseAllFiles">Collapse All Files</button>
+        <button class="btn" id="resetView">Reset View</button>
+      </div>
+    </div>
+
+    <div class="search-row">
+      <input id="searchBox" class="search" type="text" placeholder="Search blocks, stages, files, retrieval, diagnosis, vector store..." />
+      <button class="btn" id="clearSearch">Clear Search</button>
+    </div>
+
+    <div class="layout">
+      <section class="panel">
+        <div class="panel-header">
+          <h2>Main Flow</h2>
+          <p>Primary business steps of AutomotiveRAGFlow. Click one to drive the right-side detail panel.</p>
+        </div>
+        <div class="panel-body">
+          <div class="flow-list" id="flowList"></div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-header">
+          <h2>Stage Mapping</h2>
+          <p>Grouped pipeline stages from ingestion to final response. These stay aligned with the selected flow step.</p>
+        </div>
+        <div class="panel-body">
+          <div class="stage-list" id="stageList"></div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-header">
+          <h2>Stage / File Details</h2>
+          <p>Layered view: overview first, then data, files, and code only when needed.</p>
+        </div>
+        <div class="panel-body" id="detailPanel">
+          <div class="empty-state">
+            <div class="empty-state-inner">
+              <h3>Select a flow block</h3>
+              <p>
+                Start from the left panel. Then inspect the matching stage mapping in the middle and detailed structure here.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <div class="footer-note">
+      Tip: this page is fully data-driven. To extend it later, just add more objects in the <strong>flowData</strong> array.
+    </div>
+  </div>
+
+  <script>
+    const flowData = [
+      {
+        id: "user-input",
+        title: "User Input",
+        kicker: "Runtime",
+        subtitle: "Natural language issue from driver, technician, or operator.",
+        stageNo: "07",
+        category: "query",
+        purpose: "Accept the user’s automotive complaint or query.",
+        description: "This is the live starting point of the runtime chatbot flow. A user types a symptom such as overheating, noise, battery drain, warning light, or startup problem.",
+        preData: `None`,
+        postData: `{
+  "user_query": "My car overheats after driving for 20 minutes"
+}`,
+        substeps: [
+          "Collect plain-language automotive symptom",
+          "Validate empty / exit / invalid input",
+          "Send request to orchestrator",
+          "Start runtime request lifecycle"
+        ],
+        files: [
+          {
+            fileName: "main.py",
+            calledBy: "Python runtime / user launch",
+            callsNext: "app/core/orchestrator.py",
+            purpose: "Application entry point.",
+            input: `Console input or future API request`,
+            output: `Structured runtime call to orchestrator`,
+            code: `from app.core.orchestrator import AutomotiveRAGOrchestrator
+
+def main():
+    orchestrator = AutomotiveRAGOrchestrator()
+    while True:
+        query = input("Enter automotive issue: ").strip()
+        if query.lower() in ["exit", "quit"]:
+            break
+        result = orchestrator.handle_query(query)
+        print(result["response"])
+
+if __name__ == "__main__":
+    main()`
+          }
+        ]
+      },
+      {
+        id: "extraction",
+        title: "Extraction",
+        kicker: "Ingestion",
+        subtitle: "Read automotive manuals and extract raw page text.",
+        stageNo: "02",
+        category: "ingestion",
+        purpose: "Convert source PDFs into machine-readable page text.",
+        description: "This is part of the offline knowledge-build pipeline. Automotive manuals, troubleshooting books, service guides, and fault PDFs are read page by page.",
+        preData: `{
+  "file_path": "app/data/raw/toyota_manual.pdf"
+}`,
+        postData: `{
+  "source": "toyota_manual.pdf",
+  "pages": [
+    {
+      "page_number": 1,
+      "text": "Cooling system overview..."
+    }
+  ]
+}`,
+        substeps: [
+          "Locate source PDF file",
+          "Open document",
+          "Read page by page",
+          "Extract raw text",
+          "Return structured page payload"
+        ],
+        files: [
+          {
+            fileName: "app/extraction/pdf_extractor.py",
+            calledBy: "Future ingestion runner / preprocessing flow",
+            callsNext: "app/extraction/text_cleaner.py",
+            purpose: "Extract raw text from every PDF page.",
+            input: `{
+  "file_path": "app/data/raw/toyota_manual.pdf"
+}`,
+            output: `{
+  "source": "toyota_manual.pdf",
+  "pages": [{"page_number":1,"text":"Cooling system overview..."}]
+}`,
+            code: `class PDFExtractor:
+    def extract(self, file_path: str) -> dict:
+        # TODO:
+        # 1. open pdf
+        # 2. read page by page
+        # 3. return structured page payload
+        return {
+            "source": file_path.split("/")[-1],
+            "pages": []
+        }`
+          }
+        ]
+      },
+      {
+        id: "cleaning",
+        title: "Cleaning",
+        kicker: "Processing",
+        subtitle: "Normalize raw extracted text before chunking.",
+        stageNo: "03",
+        category: "processing",
+        purpose: "Remove extraction noise and standardize text.",
+        description: "PDF text often contains extra spaces, broken lines, or formatting artifacts. This step prepares clean retrieval-quality text.",
+        preData: `{
+  "source": "toyota_manual.pdf",
+  "pages": [
+    {
+      "page_number": 2,
+      "text": "Thermostat   inspection...\\n\\ncheck coolant..."
+    }
+  ]
+}`,
+        postData: `{
+  "source": "toyota_manual.pdf",
+  "pages": [
+    {
+      "page_number": 2,
+      "clean_text": "Thermostat inspection... check coolant..."
+    }
+  ]
+}`,
+        substeps: [
+          "Remove repeated whitespace",
+          "Normalize line breaks",
+          "Fix formatting noise",
+          "Prepare clean text for chunker"
+        ],
+        files: [
+          {
+            fileName: "app/extraction/text_cleaner.py",
+            calledBy: "app/extraction/pdf_extractor.py",
+            callsNext: "app/extraction/chunker.py",
+            purpose: "Normalize extracted PDF text.",
+            input: `Raw page text`,
+            output: `Clean normalized page text`,
+            code: `class TextCleaner:
+    def clean(self, raw_text: str) -> str:
+        text = raw_text.replace("\\n", " ")
+        text = " ".join(text.split())
+        return text.strip()`
+          }
+        ]
+      },
+      {
+        id: "chunking",
+        title: "Chunking",
+        kicker: "Processing",
+        subtitle: "Split cleaned text into searchable semantic blocks.",
+        stageNo: "04",
+        category: "processing",
+        purpose: "Create retrieval-ready knowledge chunks.",
+        description: "Long manual text is broken into smaller units with page/source metadata so that later vector retrieval can return precise evidence.",
+        preData: `{
+  "source": "toyota_manual.pdf",
+  "pages": [
+    {
+      "page_number": 2,
+      "clean_text": "Thermostat inspection... overheating occurs when coolant circulation fails..."
+    }
+  ]
+}`,
+        postData: `[
+  {
+    "chunk_id": "toyota_manual_p2_c1",
+    "source": "toyota_manual.pdf",
+    "page": 2,
+    "text": "Thermostat inspection...",
+    "metadata": {
+      "document_type": "manual"
+    }
+  }
+]`,
+        substeps: [
+          "Read clean page text",
+          "Split by chunk size and overlap",
+          "Attach metadata",
+          "Prepare chunk list for embedding"
+        ],
+        files: [
+          {
+            fileName: "app/extraction/chunker.py",
+            calledBy: "app/extraction/text_cleaner.py",
+            callsNext: "app/retrieval/embedding_service.py",
+            purpose: "Create chunk list with metadata.",
+            input: `Clean page text`,
+            output: `Chunk list`,
+            code: `class TextChunker:
+    def chunk(self, text: str, chunk_size: int = 500, overlap: int = 50) -> list:
+        # TODO: Implement chunk logic
+        return []`
+          }
+        ]
+      },
+      {
+        id: "embedding",
+        title: "Embedding",
+        kicker: "Retrieval Base",
+        subtitle: "Turn text into vectors for semantic search.",
+        stageNo: "05",
+        category: "retrieval",
+        purpose: "Create vector representation for chunks and queries.",
+        description: "Both offline chunk text and runtime query text go through the embedding service so similarity search can work.",
+        preData: `{
+  "chunk_id": "toyota_manual_p2_c1",
+  "text": "Overheating occurs when coolant circulation fails..."
+}`,
+        postData: `{
+  "chunk_id": "toyota_manual_p2_c1",
+  "embedding": [0.112, -0.088, 0.731, ...]
+}`,
+        substeps: [
+          "Read source text",
+          "Call embedding model",
+          "Generate numeric vector",
+          "Return embedding payload"
+        ],
+        files: [
+          {
+            fileName: "app/retrieval/embedding_service.py",
+            calledBy: "chunker.py / retriever.py",
+            callsNext: "vector_store.py",
+            purpose: "Generate embeddings for text.",
+            input: `Chunk text or normalized query`,
+            output: `Embedding vector`,
+            code: `class EmbeddingService:
+    def embed_text(self, text: str) -> list[float]:
+        # TODO: Call embedding model
+        return []`
+          }
+        ]
+      },
+      {
+        id: "vector-store",
+        title: "Vector Store",
+        kicker: "Retrieval Base",
+        subtitle: "Store vectors and metadata in searchable memory.",
+        stageNo: "06",
+        category: "retrieval",
+        purpose: "Persist automotive knowledge for semantic lookup.",
+        description: "This becomes the searchable memory of AutomotiveRAGFlow. During runtime, the retriever queries this store to fetch evidence.",
+        preData: `{
+  "chunk_id": "toyota_manual_p2_c1",
+  "embedding": [0.112, -0.088, 0.731, ...],
+  "metadata": {
+    "source": "toyota_manual.pdf",
+    "page": 2,
+    "text": "Overheating occurs when coolant circulation fails..."
+  }
+}`,
+        postData: `{
+  "status": "stored",
+  "vector_count": 2500
+}`,
+        substeps: [
+          "Receive embedding + metadata",
+          "Store in vector index",
+          "Support nearest-neighbor search",
+          "Expose retrieval interface"
+        ],
+        files: [
+          {
+            fileName: "app/retrieval/vector_store.py",
+            calledBy: "embedding_service.py / retriever.py",
+            callsNext: "retrieval search results",
+            purpose: "Store and search chunk vectors.",
+            input: `Embedding documents`,
+            output: `Stored index or top-k results`,
+            code: `class VectorStore:
+    def add_documents(self, documents: list) -> None:
+        # TODO: insert documents into vector db
+        pass
+
+    def search(self, query_embedding: list[float], top_k: int = 5) -> list:
+        # TODO: return nearest chunks
+        return []`
+          }
+        ]
+      },
+      {
+        id: "query-understanding",
+        title: "Query Understanding",
+        kicker: "Runtime",
+        subtitle: "Normalize the user query and detect intent/entities.",
+        stageNo: "10",
+        category: "query",
+        purpose: "Convert free-text automotive issue into retrieval-friendly structure.",
+        description: "This turns messy natural language into a more focused technical query, with detected symptom, system area, or context such as 'after 20 minutes' or 'only while idling'.",
+        preData: `{
+  "user_query": "My car overheats after driving for 20 minutes"
+}`,
+        postData: `{
+  "original_query": "My car overheats after driving for 20 minutes",
+  "normalized_query": "car overheating after driving 20 minutes",
+  "intent": "diagnostic_symptom",
+  "entities": {
+    "symptom": "overheating",
+    "time_context": "after driving 20 minutes",
+    "system": "cooling system"
+  }
+}`,
+        substeps: [
+          "Read raw user query",
+          "Normalize phrasing",
+          "Detect intent",
+          "Extract symptom/entities",
+          "Build retrieval-ready payload"
+        ],
+        files: [
+          {
+            fileName: "app/query/query_handler.py",
+            calledBy: "pipeline.py",
+            callsNext: "query_rewriter.py, intent_detector.py, retriever.py",
+            purpose: "Coordinate full query preprocessing.",
+            input: `Raw user query`,
+            output: `Structured query contract`,
+            code: `class QueryHandler:
+    def process(self, user_query: str) -> dict:
+        return {
+            "original_query": user_query,
+            "normalized_query": "car overheating after driving 20 minutes",
+            "intent": "diagnostic_symptom",
+            "entities": {
+                "symptom": "overheating",
+                "time_context": "after driving 20 minutes",
+                "system": "cooling system"
+            }
+        }`
+          },
+          {
+            fileName: "app/query/query_rewriter.py",
+            calledBy: "query_handler.py",
+            callsNext: "query_handler.py / retriever.py",
+            purpose: "Rewrite to retrieval-friendly phrasing.",
+            input: `Raw or normalized query`,
+            output: `Improved retrieval phrase`,
+            code: `class QueryRewriter:
+    def rewrite(self, user_query: str) -> str:
+        return user_query.lower().strip()`
+          },
+          {
+            fileName: "app/query/intent_detector.py",
+            calledBy: "query_handler.py",
+            callsNext: "query_handler.py",
+            purpose: "Detect intent and entities.",
+            input: `User query`,
+            output: `Intent + entities`,
+            code: `class IntentDetector:
+    def detect(self, query: str) -> dict:
+        return {
+            "intent": "diagnostic_symptom",
+            "entities": {}
+        }`
+          }
+        ]
+      },
+      {
+        id: "retrieval",
+        title: "Retrieval",
+        kicker: "Runtime",
+        subtitle: "Search the vector store for relevant automotive evidence.",
+        stageNo: "11",
+        category: "retrieval",
+        purpose: "Fetch top-k relevant chunks using semantic similarity.",
+        description: "The normalized query is embedded and compared against vectorized manual chunks. Top matches are returned for evidence-backed diagnosis.",
+        preData: `{
+  "normalized_query": "car overheating after driving 20 minutes",
+  "intent": "diagnostic_symptom"
+}`,
+        postData: `[
+  {
+    "doc_id": "toyota_manual_p88_c1",
+    "source": "toyota_manual.pdf",
+    "page": 88,
+    "text": "Engine overheating after warm-up may be caused by low coolant...",
+    "score": 0.92
+  }
+]`,
+        substeps: [
+          "Embed normalized query",
+          "Search vector store",
+          "Rank by similarity",
+          "Return top evidence chunks"
+        ],
+        files: [
+          {
+            fileName: "app/retrieval/retriever.py",
+            calledBy: "pipeline.py",
+            callsNext: "diagnosis_engine.py",
+            purpose: "Perform runtime semantic retrieval.",
+            input: `Query payload`,
+            output: `Top-k evidence documents`,
+            code: `class Retriever:
+    def retrieve(self, query_payload: dict) -> list:
+        # TODO:
+        # 1. embed normalized query
+        # 2. search vector store
+        # 3. return top-k docs
+        return []`
+          }
+        ]
+      },
+      {
+        id: "diagnosis",
+        title: "Diagnosis",
+        kicker: "Runtime",
+        subtitle: "Convert evidence into likely causes and checks.",
+        stageNo: "12",
+        category: "diagnosis",
+        purpose: "Infer likely faults, causes, and recommended checks.",
+        description: "This is the reasoning layer of AutomotiveRAGFlow. It can use rules, prompting, or an LLM-supported synthesis model to turn retrieved context into practical diagnostic guidance.",
+        preData: `{
+  "query": "car overheating after driving 20 minutes",
+  "retrieved_docs": [
+    {
+      "text": "Engine overheating after warm-up may be caused by low coolant..."
+    }
+  ]
+}`,
+        postData: `{
+  "issue": "engine_overheating_after_warmup",
+  "possible_causes": [
+    "Low coolant level",
+    "Thermostat stuck closed",
+    "Cooling fan malfunction"
+  ],
+  "recommended_checks": [
+    "Check coolant level",
+    "Inspect cooling fan operation",
+    "Inspect thermostat"
+  ],
+  "confidence": 0.87
+}`,
+        substeps: [
+          "Read top evidence chunks",
+          "Synthesize likely issue",
+          "Build likely causes list",
+          "Generate recommended checks",
+          "Score confidence",
+          "Prepare response draft"
+        ],
+        files: [
+          {
+            fileName: "app/diagnosis/diagnosis_engine.py",
+            calledBy: "pipeline.py",
+            callsNext: "confidence_scorer.py, response_builder.py, clarification_engine.py",
+            purpose: "Core automotive reasoning engine.",
+            input: `Query + retrieved docs`,
+            output: `Diagnosis contract`,
+            code: `class DiagnosisEngine:
+    def diagnose(self, query_payload: dict, retrieved_docs: list) -> dict:
+        return {
+            "issue": "engine_overheating_after_warmup",
+            "possible_causes": [],
+            "recommended_checks": [],
+            "confidence": 0.0,
+            "reasoning_summary": ""
+        }`
+          },
+          {
+            fileName: "app/diagnosis/confidence_scorer.py",
+            calledBy: "diagnosis_engine.py",
+            callsNext: "diagnosis_engine.py",
+            purpose: "Compute confidence score.",
+            input: `Evidence set + diagnosis result`,
+            output: `0.0 to 1.0 score`,
+            code: `class ConfidenceScorer:
+    def score(self, retrieved_docs: list, diagnosis_result: dict) -> float:
+        return 0.85`
+          },
+          {
+            fileName: "app/diagnosis/response_builder.py",
+            calledBy: "diagnosis_engine.py / pipeline.py",
+            callsNext: "main.py display / future API",
+            purpose: "Build user-facing final message.",
+            input: `Diagnosis result`,
+            output: `Readable response string`,
+            code: `class ResponseBuilder:
+    def build(self, diagnosis_result: dict) -> str:
+        causes = diagnosis_result.get("possible_causes", [])
+        return f"The likely causes are: {', '.join(causes)}"`
+          }
+        ]
+      },
+      {
+        id: "clarification-loop",
+        title: "Clarification Loop",
+        kicker: "Runtime",
+        subtitle: "Ask follow-up questions if evidence is weak or ambiguous.",
+        stageNo: "13",
+        category: "loop",
+        purpose: "Improve diagnostic accuracy through iterative refinement.",
+        description: "When confidence is low, the system should not over-claim. Instead, it asks the next best narrowing question and loops refined input back into the runtime pipeline.",
+        preData: `{
+  "issue": "engine_overheating_after_warmup",
+  "confidence": 0.42
+}`,
+        postData: `{
+  "needs_clarification": true,
+  "clarification_question": "Does overheating happen while idling, in traffic, or only during driving?"
+}`,
+        substeps: [
+          "Check diagnosis confidence",
+          "Detect ambiguity",
+          "Form clarification question",
+          "Capture follow-up input",
+          "Merge refined context back into query flow"
+        ],
+        files: [
+          {
+            fileName: "app/loop/clarification_engine.py",
+            calledBy: "pipeline.py / diagnosis_engine.py",
+            callsNext: "feedback_handler.py or final response",
+            purpose: "Decide whether follow-up is required.",
+            input: `Diagnosis result`,
+            output: `Clarification decision`,
+            code: `class ClarificationEngine:
+    def evaluate(self, diagnosis_result: dict) -> dict:
+        confidence = diagnosis_result.get("confidence", 0.0)
+        if confidence < 0.60:
+            return {
+                "needs_clarification": True,
+                "clarification_question": "Does overheating happen while idling, in traffic, or only during driving?"
+            }
+        return {
+            "needs_clarification": False,
+            "clarification_question": ""
+        }`
+          },
+          {
+            fileName: "app/loop/feedback_handler.py",
+            calledBy: "clarification_engine.py / future conversation manager",
+            callsNext: "query_handler.py or pipeline.py",
+            purpose: "Merge follow-up answer back into the request context.",
+            input: `Original query + follow-up answer`,
+            output: `Updated query text/context`,
+            code: `class FeedbackHandler:
+    def merge_feedback(self, original_query: str, follow_up_answer: str) -> str:
+        return f"{original_query}. Additional info: {follow_up_answer}"`
+          }
+        ]
+      },
+      {
+        id: "final-response",
+        title: "Final Response",
+        kicker: "Runtime",
+        subtitle: "Return the final structured response to the user.",
+        stageNo: "14",
+        category: "response",
+        purpose: "Deliver final answer, confidence path, and optional evidence.",
+        description: "This is the final outward-facing contract of the runtime flow. It can later power CLI, web UI, API, or support tooling.",
+        preData: `Diagnosis result + clarification decision`,
+        postData: `{
+  "response": "The most likely causes are low coolant level, thermostat failure, or fan malfunction...",
+  "needs_clarification": false,
+  "clarification_question": "",
+  "diagnosis_result": {...},
+  "retrieved_docs": [...]
+}`,
+        substeps: [
+          "Assemble final response package",
+          "Return response string",
+          "Attach diagnosis result",
+          "Attach clarification flags",
+          "Attach evidence if needed"
+        ],
+        files: [
+          {
+            fileName: "app/core/pipeline.py",
+            calledBy: "app/core/orchestrator.py",
+            callsNext: "main.py / future API",
+            purpose: "Return unified result object.",
+            input: `State after all runtime modules`,
+            output: `Final response contract`,
+            code: `from app.core.state import PipelineState
+
+class AutomotiveRAGPipeline:
+    def run(self, user_query: str) -> dict:
+        state = PipelineState(user_query=user_query)
+        # TODO: query handling
+        # TODO: retrieval
+        # TODO: diagnosis
+        # TODO: clarification
+        return {
+            "response": state.final_response,
+            "needs_clarification": state.needs_clarification,
+            "clarification_question": state.clarification_question,
+            "diagnosis_result": state.diagnosis_result,
+            "retrieved_docs": state.retrieved_docs
+        }`
+          },
+          {
+            fileName: "app/core/orchestrator.py",
+            calledBy: "main.py",
+            callsNext: "pipeline.py",
+            purpose: "Thin controller delegating to pipeline.",
+            input: `Raw user query`,
+            output: `Final pipeline response`,
+            code: `from app.core.pipeline import AutomotiveRAGPipeline
+
+class AutomotiveRAGOrchestrator:
+    def __init__(self):
+        self.pipeline = AutomotiveRAGPipeline()
+
+    def handle_query(self, user_query: str) -> dict:
+        return self.pipeline.run(user_query)`
+          },
+          {
+            fileName: "app/core/state.py",
+            calledBy: "pipeline.py",
+            callsNext: "All runtime modules share this state",
+            purpose: "Shared request lifecycle object.",
+            input: `Raw request fields`,
+            output: `Structured mutable state`,
+            code: `from dataclasses import dataclass, field
+
+@dataclass
+class PipelineState:
+    user_query: str
+    rewritten_query: str = ""
+    retrieved_docs: list = field(default_factory=list)
+    diagnosis_result: dict = field(default_factory=dict)
+    final_response: str = ""
+    needs_clarification: bool = False
+    clarification_question: str = ""`
+          }
+        ]
+      }
+    ];
+
+    const stageOrder = [
+      { number: "02", title: "Extraction", cat: "ingestion", ref: "extraction" },
+      { number: "03", title: "Cleaning", cat: "processing", ref: "cleaning" },
+      { number: "04", title: "Chunking", cat: "processing", ref: "chunking" },
+      { number: "05", title: "Embedding", cat: "retrieval", ref: "embedding" },
+      { number: "06", title: "Vector Store", cat: "retrieval", ref: "vector-store" },
+      { number: "07", title: "User Input", cat: "query", ref: "user-input" },
+      { number: "10", title: "Query Understanding", cat: "query", ref: "query-understanding" },
+      { number: "11", title: "Retrieval", cat: "retrieval", ref: "retrieval" },
+      { number: "12", title: "Diagnosis", cat: "diagnosis", ref: "diagnosis" },
+      { number: "13", title: "Clarification Loop", cat: "loop", ref: "clarification-loop" },
+      { number: "14", title: "Final Response", cat: "response", ref: "final-response" }
+    ];
+
+    const flowList = document.getElementById("flowList");
+    const stageList = document.getElementById("stageList");
+    const detailPanel = document.getElementById("detailPanel");
+    const searchBox = document.getElementById("searchBox");
+
+    let currentId = null;
+
+    function escapeHtml(v){
+      return String(v)
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;");
+    }
+
+    function byId(id){
+      return flowData.find(x => x.id === id);
+    }
+
+    function renderFlowList(filter = ""){
+      flowList.innerHTML = "";
+      const term = filter.toLowerCase();
+
+      flowData.forEach(item => {
+        const hay = JSON.stringify(item).toLowerCase();
+        const hidden = term && !hay.includes(term);
+
+        const card = document.createElement("div");
+        card.className = "flow-card" + (item.id === currentId ? " active" : "") + (hidden ? " hidden" : "");
+        card.dataset.id = item.id;
+        card.innerHTML = `
+          <div class="kicker">${escapeHtml(item.kicker)}</div>
+          <h3>${escapeHtml(item.title)}</h3>
+          <p>${escapeHtml(item.subtitle)}</p>
+        `;
+        card.addEventListener("click", () => selectItem(item.id));
+        flowList.appendChild(card);
+      });
+    }
+
+    function renderStageList(filter = ""){
+      stageList.innerHTML = "";
+      const term = filter.toLowerCase();
+
+      stageOrder.forEach((stage, idx) => {
+        const item = byId(stage.ref);
+        const hay = JSON.stringify(item).toLowerCase();
+        const hidden = term && !hay.includes(term);
+
+        const div = document.createElement("div");
+        div.className = "stage-item" + (stage.ref === currentId ? " active" : "") + (hidden ? " hidden" : "");
+        div.dataset.id = stage.ref;
+        div.innerHTML = `
+          <div class="stage-num cat-${stage.cat}">${escapeHtml(stage.number)}</div>
+          <div class="stage-text">
+            <h4>${escapeHtml(stage.title)}</h4>
+            <p>${escapeHtml(item.subtitle)}</p>
+          </div>
+          <div class="chev">→</div>
+        `;
+        div.addEventListener("click", () => selectItem(stage.ref));
+        stageList.appendChild(div);
+
+        if (idx < stageOrder.length - 1) {
+          const nextItem = byId(stageOrder[idx + 1].ref);
+          const nextHay = JSON.stringify(nextItem).toLowerCase();
+          const arrowHidden = term && !hay.includes(term) && !nextHay.includes(term);
+
+          const arrow = document.createElement("div");
+          arrow.className = "arrow" + (arrowHidden ? " hidden" : "");
+          arrow.textContent = "↓";
+          stageList.appendChild(arrow);
+        }
+      });
+    }
+
+    function buildReveal(title, content, id){
+      return `
+        <div class="reveal-item">
+          <div class="reveal-head" onclick="toggleReveal('${id}')">
+            <strong>${escapeHtml(title)}</strong>
+            <span class="chev">+</span>
+          </div>
+          <div class="reveal-body" id="${id}">
+            <pre>${escapeHtml(content)}</pre>
+          </div>
+        </div>
+      `;
+    }
+
+    function buildFileCard(file, idx){
+      const bodyId = `file-body-${idx}`;
+      const inputId = `file-input-${idx}`;
+      const outputId = `file-output-${idx}`;
+      const codeId = `file-code-${idx}`;
+
+      return `
+        <div class="file-card">
+          <div class="file-head" onclick="toggleFile('${bodyId}')">
+            <div>
+              <strong>${escapeHtml(file.fileName)}</strong>
+              <div class="file-meta">
+                ${escapeHtml(file.purpose)}<br>
+                Called By: ${escapeHtml(file.calledBy)}<br>
+                Calls Next: ${escapeHtml(file.callsNext)}
+              </div>
+            </div>
+            <div class="chev">+</div>
+          </div>
+
+          <div class="file-body" id="${bodyId}">
+            <div class="mini-actions">
+              <button class="mini-btn" onclick="toggleReveal('${inputId}')">Input</button>
+              <button class="mini-btn" onclick="toggleReveal('${outputId}')">Output</button>
+              <button class="mini-btn" onclick="toggleReveal('${codeId}')">Code</button>
+            </div>
+
+            ${buildReveal("Input Shape", file.input, inputId)}
+            ${buildReveal("Output Shape", file.output, outputId)}
+            ${buildReveal("Code", file.code, codeId)}
+          </div>
+        </div>
+      `;
+    }
+
+    function renderDetail(itemId){
+      const item = byId(itemId);
+      if (!item) return;
+
+      const idx = flowData.findIndex(x => x.id === itemId);
+      const prev = idx > 0 ? flowData[idx - 1] : null;
+      const next = idx < flowData.length - 1 ? flowData[idx + 1] : null;
+
+      detailPanel.innerHTML = `
+        <div class="detail-head">
+          <div class="detail-title-wrap">
+            <div class="detail-badges">
+              <span class="badge">Stage ${escapeHtml(item.stageNo)}</span>
+              <span class="badge">${escapeHtml(item.kicker)}</span>
+              <span class="badge">${item.files.length} file(s)</span>
+            </div>
+            <h1 class="detail-title">${escapeHtml(item.title)}</h1>
+            <p class="detail-sub">${escapeHtml(item.description)}</p>
+          </div>
+
+          <div class="nav-mini">
+            <button class="btn" ${prev ? "" : "disabled"} onclick="${prev ? `selectItem('${prev.id}')` : ""}">← Previous</button>
+            <button class="btn" ${next ? "" : "disabled"} onclick="${next ? `selectItem('${next.id}')` : ""}">Next →</button>
+          </div>
+        </div>
+
+        <div class="tabs">
+          <button class="tab-btn active" onclick="switchTab(this,'tab-overview')">Overview</button>
+          <button class="tab-btn" onclick="switchTab(this,'tab-data')">Data</button>
+          <button class="tab-btn" onclick="switchTab(this,'tab-files')">Files</button>
+          <button class="tab-btn" onclick="switchTab(this,'tab-code')">Code</button>
+        </div>
+
+        <div id="tab-overview" class="tab-panel active">
+          <div class="summary-grid">
+            <div class="box">
+              <h3>Purpose</h3>
+              <p>${escapeHtml(item.purpose)}</p>
+            </div>
+            <div class="box">
+              <h3>Why this stage exists</h3>
+              <p>${escapeHtml(item.subtitle)}</p>
+            </div>
+            <div class="box" style="grid-column:1/-1;">
+              <h3>Sub-steps</h3>
+              <ol>
+                ${item.substeps.map(s => `<li>${escapeHtml(s)}</li>`).join("")}
+              </ol>
+            </div>
+          </div>
+        </div>
+
+        <div id="tab-data" class="tab-panel">
+          <div class="reveal-group">
+            ${buildReveal("Pre Data", item.preData, `pre-${item.id}`)}
+            ${buildReveal("Post Data", item.postData, `post-${item.id}`)}
+          </div>
+        </div>
+
+        <div id="tab-files" class="tab-panel">
+          ${item.files.map((f, i) => buildFileCard(f, `${item.id}-${i}`)).join("")}
+        </div>
+
+        <div id="tab-code" class="tab-panel">
+          <div class="reveal-group">
+            ${item.files.map((f, i) => buildReveal(f.fileName, f.code, `code-top-${item.id}-${i}`)).join("")}
+          </div>
+        </div>
+      `;
+    }
+
+    function selectItem(id){
+      currentId = id;
+      renderFlowList(searchBox.value || "");
+      renderStageList(searchBox.value || "");
+      renderDetail(id);
+    }
+
+    function switchTab(btn, targetId){
+      const container = btn.parentElement.parentElement;
+      container.querySelectorAll(".tab-btn").forEach(x => x.classList.remove("active"));
+      container.querySelectorAll(".tab-panel").forEach(x => x.classList.remove("active"));
+      btn.classList.add("active");
+      document.getElementById(targetId).classList.add("active");
+    }
+
+    function toggleReveal(id){
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.classList.toggle("open");
+      const chev = el.parentElement.querySelector(".reveal-head .chev");
+      if (chev) chev.textContent = el.classList.contains("open") ? "−" : "+";
+    }
+
+    function toggleFile(id){
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.classList.toggle("open");
+      const chev = el.parentElement.querySelector(".file-head .chev");
+      if (chev) chev.textContent = el.classList.contains("open") ? "−" : "+";
+    }
+
+    function expandCollapseAllFiles(open){
+      document.querySelectorAll(".file-body").forEach(el => {
+        el.classList.toggle("open", open);
+      });
+      document.querySelectorAll(".file-head .chev").forEach(el => {
+        el.textContent = open ? "−" : "+";
+      });
+    }
+
+    function applySearch(){
+      const term = searchBox.value.trim().toLowerCase();
+      renderFlowList(term);
+      renderStageList(term);
+
+      if (term) {
+        const visible = flowData.find(item => JSON.stringify(item).toLowerCase().includes(term));
+        if (visible) {
+          currentId = visible.id;
+          renderFlowList(term);
+          renderStageList(term);
+          renderDetail(visible.id);
+        } else {
+          detailPanel.innerHTML = `
+            <div class="empty-state">
+              <div class="empty-state-inner">
+                <h3>No matches found</h3>
+                <p>Try searching with words like extraction, query, retrieval, diagnosis, vector, or response.</p>
+              </div>
+            </div>
+          `;
+        }
+      } else if (!currentId) {
+        detailPanel.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-state-inner">
+              <h3>Select a flow block</h3>
+              <p>Start from the left panel. Then inspect the matching stage mapping in the middle and detailed structure here.</p>
+            </div>
+          </div>
+        `;
+      } else {
+        renderDetail(currentId);
+      }
+    }
+
+    document.getElementById("expandAllFiles").addEventListener("click", () => expandCollapseAllFiles(true));
+    document.getElementById("collapseAllFiles").addEventListener("click", () => expandCollapseAllFiles(false));
+    document.getElementById("resetView").addEventListener("click", () => {
+      searchBox.value = "";
+      currentId = null;
+      renderFlowList();
+      renderStageList();
+      detailPanel.innerHTML = `
+        <div class="empty-state">
+          <div class="empty-state-inner">
+            <h3>Select a flow block</h3>
+            <p>Start from the left panel. Then inspect the matching stage mapping in the middle and detailed structure here.</p>
+          </div>
+        </div>
+      `;
+    });
+
+    document.getElementById("clearSearch").addEventListener("click", () => {
+      searchBox.value = "";
+      applySearch();
+    });
+
+    searchBox.addEventListener("input", applySearch);
+
+    renderFlowList();
+    renderStageList();
+  </script>
+</body>
+</html>
